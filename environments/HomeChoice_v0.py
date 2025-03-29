@@ -7,8 +7,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import time
 import pygame
-###################################################################################################################
 
+###################################################################################################################
 class HomeChoiceEnv(gym.Env):
     """
     Simulador de investimento imobiliário na cidade de São Paulo.
@@ -28,15 +28,39 @@ class HomeChoiceEnv(gym.Env):
         self.action_space       = spaces.Discrete(3) # Espaço de Ação: 0 = Comprar, 1 = Esperar, 2 = Vender
         self.observation_space  = spaces.Box(low=0, high=1, shape=(6,), dtype=np.float32) # Espaço de Observação: [preço do imóvel, metragem, IDH, taxa de criminalidade, infraestrutura, saldo do agente]
         self.idh_bairros        = {
-            "Pinheiros": 0.942, "Sé": 0.889, "Lapa": 0.906, "Mooca": 0.869,
-            "Santana / Tucuruvi": 0.869, "Vila Mariana": 0.938, "Butantã": 0.859,
-            "Ipiranga": 0.824, "Jabaquara": 0.816, "Santo Amaro": 0.909,
-            "Casa Verde": 0.799, "Penha": 0.804, "São Miguel Paulista": 0.736,
-            "Perus": 0.731, "Cidade Ademar": 0.758, "Freguesia do Ó / Brasilândia": 0.762,
-            "Pirituba / Jaraguá": 0.787, "Campo Limpo": 0.783, "Ermelino Matarazzo": 0.777,
-            "M’Boi Mirim": 0.716, "Cidade Tiradentes": 0.708, "Guaianases": 0.713,
-            "São Mateus": 0.732, "Itaim Paulista": 0.725, "Itaquera": 0.758
-        }
+            "AGUA RASA": 0.869,"ALTO DE PINHEIROS": 0.942,"ANHANGUERA": 0.731,
+            "ARICANDUVA": 0.758,"ARTUR ALVIM": 0.804,"BARRA FUNDA": 0.889,
+            "BELA VISTA": 0.889,"BELEM": 0.869,"BOM RETIRO": 0.889,
+            "BRAS": 0.869,"BRASILANDIA": 0.762,"BUTANTA": 0.859,
+            "CACHOEIRINHA": 0.799,"CAMBUCI": 0.889,"CAMPO BELO": 0.909,
+            "CAMPO GRANDE": 0.909,"CAMPO LIMPO": 0.783,"CANGAIBA": 0.804,
+            "CAPAO REDONDO": 0.783,"CARRAO": 0.758,"CASA VERDE": 0.799,
+            "CIDADE ADEMAR": 0.758,"CIDADE DUTRA": 0.758,"CIDADE LIDER": 0.758,
+            "CIDADE TIRADENTES": 0.708,"CONSOLACAO": 0.889,"CURSINO": 0.824,
+            "ERMELINO MATARAZZO": 0.777,"FREGUESIA DO O": 0.762,"GRAJAU": 0.758,
+            "GUAIANASES": 0.713,"IGUATEMI": 0.732,"IPIRANGA": 0.824,
+            "ITAIM BIBI": 0.942,"ITAIM PAULISTA": 0.725,"ITAQUERA": 0.758,
+            "JABAQUARA": 0.816,"JACANA": 0.869,"JAGUARA": 0.787,
+            "JAGUARE": 0.787,"JARAGUA": 0.787,"JARDIM ANGELA": 0.716,
+            "JARDIM HELENA": 0.736,"JARDIM PAULISTA": 0.942,"JARDIM SAO LUIS": 0.716,
+            "JOSE BONIFACIO": 0.758,"LAJEADO": 0.713,"LAPA": 0.906,
+            "LIBERDADE": 0.889,"LIMAO": 0.799,"MANDAQUI": 0.869,
+            "MARSILAC": 0.708,"MOEMA": 0.938,"MOOCA": 0.869,
+            "MORUMBI": 0.859,"PARELHEIROS": 0.708,"PARI": 0.869,
+            "PARQUE DO CARMO": 0.758,"PEDREIRA": 0.758,"PENHA": 0.804,
+            "PERDIZES": 0.906,"PERUS": 0.731,"PINHEIROS": 0.942,
+            "PIRITUBA": 0.787,"PONTE RASA": 0.777,"RAPOSO TAVARES": 0.859,
+            "REPUBLICA": 0.889,"RIO PEQUENO": 0.859,"SACOMA": 0.824,
+            "SANTA CECILIA": 0.889,"SANTANA": 0.869,"SANTO AMARO": 0.909,
+            "SAO DOMINGOS": 0.787,"SAO LUCAS": 0.758,"SAO MATEUS": 0.732,
+            "SAO MIGUEL": 0.736,"SAO RAFAEL": 0.732,"SAPOPEMBA": 0.758,
+            "SAUDE": 0.938,"SE": 0.889,"SOCORRO": 0.758,"TATUAPE": 0.869,
+            "TREMEMBE": 0.869,"TUCURUVI": 0.869,"VILA ANDRADE": 0.783,
+            "VILA CURUCA": 0.725,"VILA FORMOSA": 0.758,"VILA GUILHERME": 0.869,
+            "VILA JACUI": 0.736,"VILA LEOPOLDINA": 0.906,"VILA MARIA": 0.869,
+            "VILA MARIANA": 0.938,"VILA MATILDE": 0.804,"VILA MEDEIROS": 0.869,
+            "VILA PRUDENTE": 0.758,"VILA SONIA": 0.859
+            }
         self.market             = self._generate_market()
 
 ###################################################################################################################
