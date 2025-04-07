@@ -7,6 +7,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import time
 import pygame
+from shapely.geometry import Polygon, Point
+import random
+import os
+import importlib
+import sys
+import geopandas as gpd
+from environments.GEO.maps.SP import distritos
 
 ###################################################################################################################
 class HomeChoiceEnv(gym.Env):
@@ -17,6 +24,7 @@ class HomeChoiceEnv(gym.Env):
     """
     def __init__(self, render_mode='human'):
         super().__init__()
+        self.bairro_poligonos = self._mapear_bairros_para_poligonos(distritos)
         self.render_mode        = render_mode
         self.history            = []  # Histórico para renderização gráfica
         self.fig, self.ax       = None, None
@@ -61,14 +69,17 @@ class HomeChoiceEnv(gym.Env):
             "VILA MARIANA": 0.938,"VILA MATILDE": 0.804,"VILA MEDEIROS": 0.869,
             "VILA PRUDENTE": 0.758,"VILA SONIA": 0.859
             }
-        self.market             = self._generate_market()
+        self.market             = self._generate_market()  # Gera o mercado inicial
 
 ###################################################################################################################
     def _generate_market(self):
         """Gera um bairro fictício de imóveis com características variadas, refletindo a realidade de São Paulo."""
         market  = []
         bairros = list(self.idh_bairros.keys())
-        for _ in range(100000):  # 100.000 imóveis
+        rr = 10000
+        for _ in range(rr): 
+            if _ % 1000 == 0:
+                print(f"🛠️  Gerando imóvel {_} / {rr}")
             bairro = np.random.choice(bairros)
             idh = self.idh_bairros.get(bairro, 0.8)  # Se não encontrar, assume IDH médio de 0.8
             # Ajuste da distribuição de tipos de imóveis conforme o IDH do bairro
@@ -131,6 +142,15 @@ class HomeChoiceEnv(gym.Env):
                 "demanda": demanda,
                 "tempo_no_mercado": 0
             }
+            # Geração da posição (pos)
+            poligono = self.bairro_poligonos.get(bairro.upper())
+            if poligono:
+                pos = self._ponto_aleatorio_em_poligono(poligono)
+            else:
+                print(f"⚠️ Bairro '{bairro}' sem polígono associado — usando fallback.")
+                pos = (random.randint(100, 700), random.randint(100, 500))
+            
+            property_data["pos"] = pos
             market.append(property_data)
 
         return market
@@ -271,9 +291,30 @@ class HomeChoiceEnv(gym.Env):
         self.cash = 100000
         self.owned_properties = []
         self.current_step = 0
-        self.market = self._generate_market()
+        #self.market = self._generate_market()
         return self._get_observation()
 
+###################################################################################################################
+
+    def _mapear_bairros_para_poligonos(self, distritos):
+        """Associa cada bairro ao polígono correspondente com base no nome."""
+        mapa = {}
+        for d in distritos:
+            nome = d["nome"].strip().upper()
+            mapa[nome] = d["poligono"]
+        return mapa
+    
+    
+    def _ponto_aleatorio_em_poligono(self, poligono, tentativas=100):
+        poly = Polygon(poligono)
+        minx, miny, maxx, maxy = poly.bounds
+        for _ in range(tentativas):
+            x = random.uniform(minx, maxx)
+            y = random.uniform(miny, maxy)
+            if poly.contains(Point(x, y)):
+                return int(x), int(y)
+        print("⚠️ Fallback em polígono", poligono[:3])
+        return int((minx + maxx) / 2), int((miny + maxy) / 2)
 ###################################################################################################################
 
     def render_pygame_v0(self):

@@ -29,20 +29,26 @@ COLOR_SOLD = (220, 20, 60)          # Vermelho
 
 ICON_RADIUS = 5
 
-
 def draw_distritos(screen):
-    for poly in distritos:
-        pygame.draw.polygon(screen, COLOR_DISTRICT, poly, width=0)
-        pygame.draw.polygon(screen, COLOR_OUTLINE, poly, width=1)
+    for distrito in distritos:
+        poly = distrito.get("poligono")
 
+        if not isinstance(poly, list) or not all(isinstance(p, tuple) and len(p) == 2 for p in poly):
+            print(f"❌ Polígono malformado em {distrito.get('nome', 'sem nome')}")
+            continue
 
+        try:
+            pygame.draw.polygon(screen, COLOR_DISTRICT, poly, width=0)
+            pygame.draw.polygon(screen, COLOR_OUTLINE, poly, width=1)
+        except Exception as e:
+            print(f"❌ Erro ao desenhar {distrito.get('nome', 'sem nome')}: {e}")
+
+                
 def draw_imoveis(screen, mercado, current_step, comprados, vendidos):
     for i, prop in enumerate(mercado[current_step:current_step+20]):
-        if "pos" not in prop:
-            # Posição aleatória temporária (depois pode ser vinculada ao bairro)
-            x = random.randint(100, 700)
-            y = random.randint(100, 500)
-            prop["pos"] = (x, y)
+        pos = prop.get("pos")
+        if not pos:
+            continue
 
         color = COLOR_ANALYZED if i == 0 else COLOR_AVAILABLE
         pygame.draw.circle(screen, color, prop["pos"], ICON_RADIUS)
