@@ -75,9 +75,9 @@ plt.tight_layout()
 # plt.show()
 
 
-plt.savefig("images/mapa_distritos.png", dpi=300)
+plt.savefig("images/mapa_SP_bairros.png", dpi=300)
 plt.close()
-print("✅ Mapa salvo em 'images/mapa_distritos.png'")
+print("✅ Mapa salvo em 'images/mapa_SP_bairros.png'")
 
 
 # Exporta para SP.py
