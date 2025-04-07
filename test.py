@@ -9,11 +9,11 @@ import random
 sys.path.append(os.path.abspath("."))
 
 # Imports do ambiente e mapa
-import RL.environments.HomeChoice_v0 as home_env
+import environments.HomeChoice_v0 as home_env
 importlib.reload(home_env)
 HomeChoiceEnv = home_env.HomeChoiceEnv
 
-from RL.environments.GEO.maps.SP import distritos
+from environments.GEO.maps.SP import distritos
 
 # Seed para consistência na posição dos ícones
 random.seed(42)
