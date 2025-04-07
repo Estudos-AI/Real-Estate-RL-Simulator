@@ -68,7 +68,7 @@ plt.figure(figsize=(8, 6))
 for d in distritos_py:
     xs, ys = zip(*d["poligono"])
     plt.plot(xs, ys, color="black", linewidth=0.6)
-plt.title("Pré-visualização dos distritos (ajuste scale/offset se necessário)")
+plt.title("Pré-visualização dos distritos")
 plt.gca().invert_yaxis()
 plt.axis("equal")
 plt.tight_layout()
