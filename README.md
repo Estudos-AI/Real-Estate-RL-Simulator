@@ -92,3 +92,6 @@ A cada rodada, o agente pode escolher uma entre três ações:
 <div align="justify">
 💡 O estado pode ser representado como um vetor numérico para facilitar o treinamento.
 </div>
+
+<img src="images/mapa_distritos.png" alt="Mapa dos Distritos de SP" width="600"/>
+

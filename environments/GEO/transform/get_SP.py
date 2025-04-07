@@ -72,7 +72,13 @@ plt.title("Pré-visualização dos distritos (ajuste scale/offset se necessário
 plt.gca().invert_yaxis()
 plt.axis("equal")
 plt.tight_layout()
-plt.show()
+# plt.show()
+
+
+plt.savefig("images/mapa_distritos.png", dpi=300)
+plt.close()
+print("✅ Mapa salvo em 'images/mapa_distritos.png'")
+
 
 # Exporta para SP.py
 with open(output_path, "w", encoding="utf-8") as f:
