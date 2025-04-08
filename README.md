@@ -94,4 +94,5 @@ A cada rodada, o agente pode escolher uma entre três ações:
 </div>
 
 <img src="images/mapa_SP_bairros.png" alt="Mapa dos Distritos de SP" width="600"/>
+<img src="images/mapa_SP_bairros_real.png" alt="Mapa dos Distritos de SP" width="600"/>
 

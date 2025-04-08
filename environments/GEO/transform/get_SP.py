@@ -1,14 +1,18 @@
-# SÃO PAULO - MAPA DE DISTRITOS
-# Este script gera um mapa de contorno dos distritos da cidade de São Paulo, a partir de um arquivo GeoJSON.
-# Permite visualizar o mapa antes de exportar para coordenadas pygame.
+# SÃO PAULO - MAPA DE DISTRITOS (em coordenadas reais para mapas interativos)
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import os
 
+# Caminhos
+geojson_path = os.path.join("environments", "GEO", "raw", "distritos.geojson")
+output_path  = os.path.join("environments", "GEO", "maps", "SP.py")
 
+# Carrega o GeoJSON e converte para WGS84 (lat/lon)
+gdf = gpd.read_file(geojson_path)
+gdf = gdf.to_crs(epsg=4326)  # EPSG 4326 = latitude/longitude padrão
 
-# Lista oficial dos nomes dos distritos de São Paulo (ordem igual à do GeoJSON)
+# Lista oficial dos nomes (ordem igual à do GeoJSON)
 nomes_distritos = [
     "PIRITUBA", "SAO DOMINGOS", "JARAGUA", "BRASILANDIA", "FREGUESIA DO O", "CASA VERDE", "CACHOEIRINHA", "LIMAO",
     "VILA GUILHERME", "VILA MARIA", "VILA MEDEIROS", "ARTUR ALVIM", "PENHA", "CANGAIBA", "VILA MATILDE", "PONTE RASA",
@@ -25,101 +29,41 @@ nomes_distritos = [
     "ITAQUERA"
 ]
 
-
-# Caminhos
-geojson_path = os.path.join("environments", "GEO", "raw" , "distritos.geojson")
-output_path  = os.path.join("environments", "GEO", "maps", "SP.py")
-
-# Parâmetros ajustáveis
-scale = 0.00005         # quanto menor, mais cabe na tela
-offset = (400, 550)     # move o mapa no plano (x, y)
-
-# Carrega o GeoJSON
-gdf = gpd.read_file(geojson_path)
-gdf = gdf.to_crs(epsg=3857)  # Reprojeta para metros
-
-
-def geo_to_pygame_coords(geometry, scale, offset):
+# Função para extrair coordenadas geográficas
+def geo_to_latlon_coords(geometry):
     if geometry.geom_type == "Polygon":
-        return [[(x * scale + offset[0], -y * scale + offset[1]) for x, y in geometry.exterior.coords]]
+        return [list(geometry.exterior.coords)]
     elif geometry.geom_type == "MultiPolygon":
-        return [
-            [(x * scale + offset[0], -y * scale + offset[1]) for x, y in poly.exterior.coords]
-            for poly in geometry.geoms
-        ]
+        return [list(poly.exterior.coords) for poly in geometry.geoms]
     return []
-
-
 
 # Constrói lista com nome e polígono
 distritos_py = []
 for idx, row in gdf.iterrows():
-    try:
-        nome = nomes_distritos[idx]
-    except IndexError:
-        nome = f"Distrito_{idx}"
-
-    polys = geo_to_pygame_coords(row.geometry, scale, offset)
+    nome = nomes_distritos[idx] if idx < len(nomes_distritos) else f"Distrito_{idx}"
+    polys = geo_to_latlon_coords(row.geometry)
     for poly in polys:
         distritos_py.append({"nome": nome, "poligono": poly})
 
-# Visualização
+# Visualização com matplotlib
 plt.figure(figsize=(8, 6))
 for d in distritos_py:
     xs, ys = zip(*d["poligono"])
-    plt.plot(xs, ys, color="black", linewidth=0.6)
-plt.title("Pré-visualização dos distritos")
-plt.gca().invert_yaxis()
+    plt.plot(xs, ys, color="black", linewidth=0.7)
+plt.title("Mapa dos Distritos de São Paulo (EPSG:4326)")
+#plt.gca().invert_yaxis()
 plt.axis("equal")
 plt.tight_layout()
-# plt.show()
-
-
 plt.savefig("images/mapa_SP_bairros.png", dpi=300)
 plt.close()
 print("✅ Mapa salvo em 'images/mapa_SP_bairros.png'")
 
-
-# Exporta para SP.py
+# Exporta para SP.py (coordenadas reais)
 with open(output_path, "w", encoding="utf-8") as f:
-    f.write("# Contornos dos distritos de São Paulo com nomes e coordenadas pygame\n")
+    f.write("# Contornos dos distritos de São Paulo em coordenadas geográficas (lat/lon)\n")
     f.write("distritos = [\n")
     for d in distritos_py:
         f.write(f"    {{'nome': '{d['nome']}', 'poligono': {d['poligono']}}},\n")
     f.write("]\n")
 
 print(f"✅ {len(distritos_py)} polígonos com nome salvos em '{output_path}'")
-print(f"📐 Scale usado: {scale}")
-print(f"🧭 Offset usado: {offset}")
-
-
-
-
-# # Converte todos os distritos
-# pygame_polygons = []
-# for geom in gdf.geometry:
-#     polygons = geo_to_pygame_coords(geom, scale=scale, offset=offset)
-#     pygame_polygons.extend(polygons)
-
-# # Visualização com matplotlib
-# plt.figure(figsize=(8, 6))
-# for poly in pygame_polygons:
-#     xs, ys = zip(*poly)
-#     plt.plot(xs, ys, color="black", linewidth=0.7)
-# plt.title("Pré-visualização do mapa vetorial (ajuste scale e offset se necessário)")
-# plt.gca().invert_yaxis()
-# plt.axis("equal")
-# plt.tight_layout()
-# plt.show()
-
-# # Exporta como arquivo .py com lista distritos
-# with open(output_path, "w", encoding="utf-8") as f:
-#     f.write("# Contornos dos distritos de São Paulo em coordenadas pygame\n")
-#     f.write("distritos = [\n")
-#     for poly in pygame_polygons:
-#         f.write("    " + str(poly) + ",\n")
-#     f.write("]\n")
-
-# print(f"✅ Contornos salvos em '{output_path}' com {len(pygame_polygons)} polígonos.")
-# print(f"📐 Scale usado: {scale}")
-# print(f"🧭 Offset usado: {offset}")
