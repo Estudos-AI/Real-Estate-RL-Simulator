@@ -25,14 +25,3 @@ for step in range(500):
         delattr(env, "last_sold")
 
     env.render_geemap_folium_v1()
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            pygame.quit()
-            exit()
-
-    time.sleep(0.1)
-    if done:
-        break
-
-pygame.quit()
