@@ -4,6 +4,10 @@
 O <strong>Real Estate RL Simulator</strong> é um ambiente gamificado desenvolvido para ensinar agentes de <strong>Reinforcement Learning (RL)</strong> a enriquecer investindo no mercado imobiliário. O ambiente simula um bairro fictício com <strong>100.000 imóveis</strong>, cada um com suas próprias características, como preço, metragem, renda média da região, taxa de criminalidade, IDH, demanda do mercado e infraestrutura urbana.
 </div>
 
+<img src="images/mapa_SP_bairros.png" alt="Mapa dos Distritos de SP" width="300"/>
+<img src="images/mapa_SP_bairros_real.png" alt="Mapa dos Distritos de SP" width="300"/>
+<img src="images/mapa_SP_simulação_v1.png" alt="Mapa dos Distritos de SP" width="300"/>
+
 ### 🎯 Objetivo do Agente
 <div align="justify">
 O agente começa com <strong>R$ 100.000</strong> e precisa alcançar <strong>R$ 1.000.000</strong> investindo em imóveis dentro do bairro simulado. Ele deve comprar barato, vender caro e administrar bem seu capital para atingir esse objetivo antes que o jogo termine.
@@ -93,6 +97,7 @@ A cada rodada, o agente pode escolher uma entre três ações:
 💡 O estado pode ser representado como um vetor numérico para facilitar o treinamento.
 </div>
 
-<img src="images/mapa_SP_bairros.png" alt="Mapa dos Distritos de SP" width="600"/>
-<img src="images/mapa_SP_bairros_real.png" alt="Mapa dos Distritos de SP" width="600"/>
+
+
+
 
