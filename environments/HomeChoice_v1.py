@@ -394,7 +394,7 @@ class HomeChoiceEnv(gym.Env):
                 },
                 "properties": {
                     "time": (datetime.datetime(2023, 1, 1) + datetime.timedelta(seconds=data["step"])).isoformat(),
-                    "style": {"color": data["color"], "fillColor": data["color"], "fillOpacity": 1, "radius": 1},
+                    "style": {"color": data["color"], "fillColor": data["color"], "fillOpacity": 1, "radius": 0.25},
                     "icon": "circle",
                     "popup": popup_html
                 }
