@@ -5,6 +5,7 @@ import numpy as np
 from gymnasium import spaces
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 import time
 import pygame
 from shapely.geometry import Polygon, Point
@@ -12,6 +13,7 @@ import random
 import os
 import importlib
 import sys
+from typing import Optional
 import geopandas as gpd
 from environments.GEO.maps.SP import distritos
 import folium
@@ -39,6 +41,7 @@ class HomeChoiceEnv(gym.Env):
         self.current_step       = 0
         self.waiting_steps      = 0 
         self.num_imoveis        = 10000 # Número de imóveis no mercado
+        self.max_steps = max_steps = 1000 # Número máximo de passos por episódio
         self.action_space       = spaces.Discrete(3) # Espaço de Ação: 0 = Comprar, 1 = Esperar, 2 = Vender
         self.observation_space  = spaces.Box(low=0, high=1, shape=(6,), dtype=np.float32) # Espaço de Observação: [preço do imóvel, metragem, IDH, taxa de criminalidade, infraestrutura, saldo do agente]
         self.idh_bairros        = {
@@ -184,6 +187,7 @@ class HomeChoiceEnv(gym.Env):
                 prop["preco"] *= np.random.uniform(1.05, 1.2)  # Aumento da demanda
             elif event == "criminalidade" and prop["taxa_criminalidade"] > 0.7:
                 prop["preco"] *= np.random.uniform(0.7, 0.9)  # Desvalorização em bairros perigosos
+                
 ###################################################################################################################
 
     def _get_observation(self):
@@ -200,6 +204,7 @@ class HomeChoiceEnv(gym.Env):
         cash_ratio = self.cash / 1000000  # Saldo normalizado [0, 1]
 
         return np.array([price, demand, idh, crime, infra, cash_ratio], dtype=np.float32)
+    
 ###################################################################################################################
     
     def _calculate_property_value(self):
@@ -255,8 +260,41 @@ class HomeChoiceEnv(gym.Env):
     
         self.current_step += 1
         return self._get_observation(), reward, done, {}
-
     
+###################################################################################################################
+    
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
+        """Reseta o ambiente para um novo episódio."""
+        self.cash = 100000
+        self.owned_properties = []
+        self.current_step = 0
+        #self.market = self._generate_market()
+        return self._get_observation()
+
+###################################################################################################################
+
+    def _mapear_bairros_para_poligonos(self, distritos):
+        """Associa cada bairro ao polígono correspondente com base no nome."""
+        mapa = {}
+        for d in distritos:
+            nome = d["nome"].strip().upper()
+            mapa[nome] = d["poligono"]
+        return mapa
+    
+###################################################################################################################
+    
+    def ponto_aleatorio_em_poligono(self, poligono, tentativas=100):
+        from pathlib import Path
+        output_path = Path("environments/GEO/tests/imoveis_fixos.json")
+        poly = Polygon(poligono)
+        minx, miny, maxx, maxy = poly.bounds
+        for _ in range(tentativas):
+            x = random.uniform(minx, maxx)
+            y = random.uniform(miny, maxy)
+            if poly.contains(Point(x, y)):
+                return (x, y)
+        return ((minx + maxx) / 2, (miny + maxy) / 2)
+
 ###################################################################################################################
     
     def render_grafs(self):
@@ -298,39 +336,6 @@ class HomeChoiceEnv(gym.Env):
 
             plt.tight_layout()
             plt.pause(0.05)
-
-###################################################################################################################
-    
-    def reset(self):
-        """Reseta o ambiente para um novo episódio."""
-        self.cash = 100000
-        self.owned_properties = []
-        self.current_step = 0
-        #self.market = self._generate_market()
-        return self._get_observation()
-
-###################################################################################################################
-
-    def _mapear_bairros_para_poligonos(self, distritos):
-        """Associa cada bairro ao polígono correspondente com base no nome."""
-        mapa = {}
-        for d in distritos:
-            nome = d["nome"].strip().upper()
-            mapa[nome] = d["poligono"]
-        return mapa
-    
-    
-    def ponto_aleatorio_em_poligono(self, poligono, tentativas=100):
-        from pathlib import Path
-        output_path = Path("environments/GEO/tests/imoveis_fixos.json")
-        poly = Polygon(poligono)
-        minx, miny, maxx, maxy = poly.bounds
-        for _ in range(tentativas):
-            x = random.uniform(minx, maxx)
-            y = random.uniform(miny, maxy)
-            if poly.contains(Point(x, y)):
-                return (x, y)
-        return ((minx + maxx) / 2, (miny + maxy) / 2)
 
 ###################################################################################################################
         
@@ -409,10 +414,29 @@ class HomeChoiceEnv(gym.Env):
         print(f"✅ Mapa dinâmico salvo em: {save_path}")
 
 ###################################################################################################################
-
-
-
-
+    
+    def render_map_v0(self):
+        gdf = gpd.read_file("GEO/raw/distritos.geojson")
+    
+        df = pd.DataFrame(self.market)
+        df[['x', 'y']] = pd.DataFrame(df['pos'].tolist(), index=df.index)
+        df['step'] = np.random.randint(0, self.max_steps, len(df))
+        df['status'] = np.random.choice(['disponível', 'comprado', 'vendido'], len(df))
+    
+        cores = {'disponível': 'blue', 'comprado': 'green', 'vendido': 'red'}
+        fig, ax = plt.subplots(figsize=(8, 10))
+        gdf.boundary.plot(ax=ax, linewidth=0.8, color='black')
+        sc = ax.scatter([], [], s=20)
+    
+        def update(frame):
+            ativos = df[df['step'] == frame]
+            sc.set_offsets(ativos[['x', 'y']].values)
+            sc.set_color([cores[st] for st in ativos['status']])
+            ax.set_title(f"Passo {frame}", fontsize=16)
+            return sc,
+    
+        ani = FuncAnimation(fig, update, frames=range(self.max_steps), interval=800, repeat=True)
+        plt.show()
 
 
 
